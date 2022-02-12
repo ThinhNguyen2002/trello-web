@@ -1,0 +1,71 @@
+@import '~bootstrap/scss/bootstrap';
+@import '_setting.scss';
+
+body {
+    margin: 0px;
+    font-family: 'Source Sans Pro', sans-serif;
+    line-height: 1.3em;
+    font-size: 14px;
+}
+
+.trello-container {
+    height: 100vh; //100vh độ cao full màn hình ở bất cứ màn hình nào
+    overflow: hidden;
+    background-color: $board-bg-color;
+    color: $app-main-text-color;
+
+    .icon {
+        font-size: 14px;
+        margin: 0 3px;
+    }
+    .trello-clone-container {
+        margin: 0 15px;
+        padding: 0;
+    }
+
+    // remove ouline in bootstrap4
+    textarea:focus,
+    textarea.form-control:focus,
+    input.form-control:focus,
+    input[type='text']:focus,
+    input[type='password']:focus,
+    input[type='email']:focus,
+    input[type='number']:focus,
+    [type='text'].form-control:focus,
+    [type='password'].form-control:focus,
+    [type='email'].form-control:focus,
+    [type='tel'].form-control:focus,
+    [contenteditable].form-control:focus {
+        box-shadow: none;
+        border: 1px solid $input-border-color;
+    }
+    .btn:focus,
+    .btn:active {
+        box-shadow: none !important;
+        outline: none !important;
+    }
+
+    .trello-content-editable {
+        background-color: inherit;
+        border: none;
+        font-size: inherit;
+        font-weight: inherit;
+        cursor: pointer;
+
+        &:focus {
+            background-color: white;
+        }
+    }
+
+    span.cancle-icon {
+        margin-left: $gap;
+        cursor: pointer;
+        i {
+            font-size: 18px;
+            color: $alert-danger;
+            &:hover {
+                color: darken($alert-danger, 10);
+            }
+        }
+    }
+}
