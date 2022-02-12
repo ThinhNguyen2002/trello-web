@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600');
+
+$gap: 10px;
+//Height : navbar + appbar + content = 99vh, 1vh for scollbar
+$navbar-app-height: 5vh;
+$navbar-board-height: 6vh;
+$board-content-height: 88vh;
+
+//colors
+$board-bg-color: #0079bf;
+$input-border-color: #0079bf;
+$common-element-bg: rgba(255, 255, 255, 0.24);
+$app-main-text-color: #333;
+$column-bg-color: #ebecf0;
+$alert-danger: #ee5253;
+
+$column-border-radius: 4px;
