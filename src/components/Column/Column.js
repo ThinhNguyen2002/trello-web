@@ -11,9 +11,10 @@ import { useState, useEffect, useRef } from 'react'
 import ConfirmModal from 'components/Common/ConfirmModal'
 import Card from 'components/Card/Card'
 import { MODAL_ACTION_CONFIRM } from 'utilities/constants'
+import { createCard, updateCoulumn } from 'actions/ApiCall'
 
 function Column(props) {
-    const { column, onCardDrop, onUpdateColumn } = props
+    const { column, onCardDrop, onUpdateColumnState } = props
     const cards = mapOrder(column.cards, column.cardOrder, '_id')
 
     const newCardAreaRef = useRef(null)
@@ -27,12 +28,18 @@ function Column(props) {
         setColumnTitle(e.target.value)
     }
 
+    //Update column title
     const handleTitleColumnBlur = () => {
-        let newColumn = {
-            ...column,
-            title: columnTitle,
+        if (column.title !== columnTitle) {
+            let newColumn = {
+                ...column,
+                title: columnTitle,
+            }
+            updateCoulumn(newColumn._id, newColumn).then(updatedColumn => {
+                updatedColumn.cards = newColumn.cards
+                onUpdateColumnState(updatedColumn)
+            })
         }
-        onUpdateColumn(newColumn)
     }
 
     useEffect(() => {
@@ -40,13 +47,17 @@ function Column(props) {
     }, [column.title])
 
     const toggleShowConfrimModal = () => setShowConfirmModal(!showConfirmModal)
+
+    //Remove column
     const onConfirmModalAction = (type, idColumn) => {
         if (type === MODAL_ACTION_CONFIRM) {
             let newColumn = {
                 ...column,
                 _destroy: true,
             }
-            onUpdateColumn(newColumn)
+            updateCoulumn(newColumn._id, newColumn).then(updatedColumn => {
+                onUpdateColumnState(updatedColumn)
+            }) 
         }
         toggleShowConfrimModal()
     }
@@ -71,21 +82,22 @@ function Column(props) {
             return
         }
         let newCardToAdd = {
-            id: Math.random().toString(36).substring(2, 5),
             boardId: column.boardId,
             columnId: column._id,
             title: newCardContent.trim(),
-            cover: null,
         }
 
-        let newColumn = cloneDeep(column)
+        //Call API
+        createCard(newCardToAdd).then(card => {
+            let newColumn = cloneDeep(column)
 
-        newColumn.cards.push(newCardToAdd)
-        newColumn.cardOder.push(newCardToAdd._id)
+            newColumn.cards.push(card)
+            newColumn.cardOrder.push(card._id)
 
-        onUpdateColumn(newColumn)
-        setNewCardContent('')
-        toggleOpentNewCardForm()
+            onUpdateColumnState(newColumn)
+            setNewCardContent('')
+            toggleOpentNewCardForm()
+        })
     }
 
     return (
@@ -117,7 +129,9 @@ function Column(props) {
                         />
 
                         <Dropdown.Menu>
-                            <Dropdown.Item onClick={toggleOpentNewCardForm}>Add card...</Dropdown.Item>
+                            <Dropdown.Item onClick={toggleOpentNewCardForm}>
+                                Add card...
+                            </Dropdown.Item>
                             <Dropdown.Item onClick={toggleShowConfrimModal}>
                                 Remove column...
                             </Dropdown.Item>

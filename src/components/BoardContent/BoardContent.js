@@ -10,13 +10,10 @@ import {
 import { useState, useEffect, useRef } from 'react'
 
 import './BoardContent.scss'
-
 import Column from 'components/Column/Column'
-
 import { mapOrder } from 'utilities/sorts'
 import { applyDrag } from 'utilities/dragDrop'
-
-import { fetchBoardDetails } from 'actions/ApiCall'
+import { fetchBoardDetails, createCoulumn } from 'actions/ApiCall'
 
 function BoardContent() {
     const [board, setBoard] = useState({})
@@ -31,7 +28,7 @@ function BoardContent() {
     }
 
     useEffect(() => {
-        const boardId = '6208842f62fbebc37607b005'
+        const boardId = '620479046f09c9614476f51e'
         fetchBoardDetails(boardId).then(board => {
             setBoard(board)
             setColumns(mapOrder(board.columns, board.columnOrder, '_id'))
@@ -50,7 +47,7 @@ function BoardContent() {
         newColumn = applyDrag(newColumn, dropResult)
 
         let newBoard = { ...board }
-        newBoard.columnOder = newColumn.map(column => column.id)
+        newBoard.columnOrder = newColumn.map(column => column._id)
         newBoard.columns = newColumn
 
         setBoard(newBoard)
@@ -64,11 +61,11 @@ function BoardContent() {
         ) {
             let newColumn = [...columns]
 
-            let currentColumn = newColumn.find(c => c.id === columnId)
+            let currentColumn = newColumn.find(c => c._id === columnId)
             currentColumn.cards = applyDrag(currentColumn.cards, dropResult)
 
-            currentColumn.cardOder = currentColumn.cards.map(
-                column => column.id
+            currentColumn.cardOrder = currentColumn.cards.map(
+                column => column._id
             )
 
             setColumns(newColumn)
@@ -85,32 +82,31 @@ function BoardContent() {
             return
         }
         const newColumnToAdd = {
-            id: Math.random().toString(36).substring(2, 5),
-            boardId: board.id,
+            boardId: board._id,
             title: newColumnTitle,
-            cardOder: [],
-            cards: [],
         }
+        //Call API
+        createCoulumn(newColumnToAdd).then(column => {
+            let newColumn = [...columns]
+            newColumn.push(column)
 
-        let newColumn = [...columns]
-        newColumn.push(newColumnToAdd)
+            let newBoard = { ...board }
+            newBoard.columnOrder = newColumn.map(c => c._id)
+            newBoard.columns = newColumn
 
-        let newBoard = { ...board }
-        newBoard.columnOder = newColumn.map(column => column.id)
-        newBoard.columns = newColumn
-
-        setNewColumnTitle('')
-        setBoard(newBoard)
-        setColumns(newColumn)
-        toggleOpenNewColumnForm()
+            setNewColumnTitle('')
+            setBoard(newBoard)
+            setColumns(newColumn)
+            toggleOpenNewColumnForm()
+        })
     }
 
-    const onUpdateColumn = newColumnToUpdate => {
-        let columnIdToUpdate = newColumnToUpdate.id
+    const onUpdateColumnState = newColumnToUpdate => {
+        let columnIdToUpdate = newColumnToUpdate._id
         let newColumn = [...columns]
 
         const columnIndexToUpdate = newColumn.findIndex(
-            i => i.id === columnIdToUpdate
+            i => i._id === columnIdToUpdate
         )
         if (newColumnToUpdate._destroy) {
             newColumn.splice(columnIndexToUpdate, 1)
@@ -119,7 +115,7 @@ function BoardContent() {
         }
 
         let newBoard = { ...board }
-        newBoard.columnOder = newColumn.map(column => column.id)
+        newBoard.columnOrder = newColumn.map(column => column._id)
         newBoard.columns = newColumn
 
         setBoard(newBoard)
@@ -148,7 +144,7 @@ function BoardContent() {
                         <Column
                             column={column}
                             onCardDrop={onCardDrop}
-                            onUpdateColumn={onUpdateColumn}
+                            onUpdateColumnState={onUpdateColumnState}
                         />
                     </Draggable>
                 ))}
