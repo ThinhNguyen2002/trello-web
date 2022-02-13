@@ -10,11 +10,11 @@ import {
 import { useState, useEffect, useRef } from 'react'
 import ConfirmModal from 'components/Common/ConfirmModal'
 import Card from 'components/Card/Card'
-import { MODAL_ACTION_CONFIRM, MODAL_ACTION_CLOSE } from 'utilities/constants'
+import { MODAL_ACTION_CONFIRM } from 'utilities/constants'
 
 function Column(props) {
-    const { column, onCardDrop, onUpdateColumn, onAddNewCard } = props
-    const cards = mapOrder(column.cards, column.cardOder, 'id')
+    const { column, onCardDrop, onUpdateColumn } = props
+    const cards = mapOrder(column.cards, column.cardOrder, '_id')
 
     const newCardAreaRef = useRef(null)
 
@@ -73,7 +73,7 @@ function Column(props) {
         let newCardToAdd = {
             id: Math.random().toString(36).substring(2, 5),
             boardId: column.boardId,
-            columnId: column.id,
+            columnId: column._id,
             title: newCardContent.trim(),
             cover: null,
         }
@@ -81,7 +81,7 @@ function Column(props) {
         let newColumn = cloneDeep(column)
 
         newColumn.cards.push(newCardToAdd)
-        newColumn.cardOder.push(newCardToAdd.id)
+        newColumn.cardOder.push(newCardToAdd._id)
 
         onUpdateColumn(newColumn)
         setNewCardContent('')
@@ -135,7 +135,7 @@ function Column(props) {
                 <Container
                     groupName="col"
                     orientation="vertical"
-                    onDrop={dropResult => onCardDrop(column.id, dropResult)}
+                    onDrop={dropResult => onCardDrop(column._id, dropResult)}
                     getChildPayload={index => cards[index]}
                     dragClass="card-ghost"
                     dropClass="card-ghost-drop"
@@ -208,7 +208,7 @@ function Column(props) {
                 title={'Remove colum'}
                 content={`Are you sure you want to remove <strong> ${column.title}</strong> 
                 <br />All realated cards also be removed! `}
-                idColumn={column.id}
+                idColumn={column._id}
             />
         </div>
     )

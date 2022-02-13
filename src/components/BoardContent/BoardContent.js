@@ -7,14 +7,16 @@ import {
     Form,
     Button,
 } from 'react-bootstrap'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 import './BoardContent.scss'
 
 import Column from 'components/Column/Column'
-import { innitialData } from 'actions/innitialData'
+
 import { mapOrder } from 'utilities/sorts'
 import { applyDrag } from 'utilities/dragDrop'
+
+import { fetchBoardDetails } from 'actions/ApiCall'
 
 function BoardContent() {
     const [board, setBoard] = useState({})
@@ -29,15 +31,11 @@ function BoardContent() {
     }
 
     useEffect(() => {
-        const boardFormDB = innitialData.boards.find(
-            board => board.id === 'board-1'
-        )
-        if (boardFormDB) {
-            setBoard(boardFormDB)
-            setColumns(
-                mapOrder(boardFormDB.columns, boardFormDB.columnOder, 'id')
-            )
-        }
+        const boardId = '6208842f62fbebc37607b005'
+        fetchBoardDetails(boardId).then(board => {
+            setBoard(board)
+            setColumns(mapOrder(board.columns, board.columnOrder, '_id'))
+        })
     }, [])
 
     useEffect(() => {
@@ -72,7 +70,7 @@ function BoardContent() {
             currentColumn.cardOder = currentColumn.cards.map(
                 column => column.id
             )
- 
+
             setColumns(newColumn)
         }
     }
@@ -126,7 +124,7 @@ function BoardContent() {
 
         setBoard(newBoard)
         setColumns(newColumn)
-    } 
+    }
 
     if (isEmpty(board)) {
         return <div className="not-found">Board not found</div>
@@ -150,7 +148,7 @@ function BoardContent() {
                         <Column
                             column={column}
                             onCardDrop={onCardDrop}
-                            onUpdateColumn={onUpdateColumn} 
+                            onUpdateColumn={onUpdateColumn}
                         />
                     </Draggable>
                 ))}
