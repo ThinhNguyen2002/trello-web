@@ -1,4 +1,4 @@
-import { isEmpty } from 'lodash'
+import { isEmpty, cloneDeep } from 'lodash'
 import { Container, Draggable } from 'react-smooth-dnd'
 import {
     Container as BootstrapContainer,
@@ -13,7 +13,13 @@ import './BoardContent.scss'
 import Column from 'components/Column/Column'
 import { mapOrder } from 'utilities/sorts'
 import { applyDrag } from 'utilities/dragDrop'
-import { fetchBoardDetails, createCoulumn } from 'actions/ApiCall'
+import {
+    fetchBoardDetails,
+    createCoulumn,
+    updateBoard,
+    updateCoulumn,
+    updateCard,
+} from 'actions/ApiCall'
 
 function BoardContent() {
     const [board, setBoard] = useState({})
@@ -43,15 +49,25 @@ function BoardContent() {
     }, [openNewColumnForm])
 
     const onColumnDrop = dropResult => {
-        let newColumn = [...columns]
+        let newColumn = cloneDeep(columns)
         newColumn = applyDrag(newColumn, dropResult)
 
-        let newBoard = { ...board }
+        let newBoard = cloneDeep(board)
         newBoard.columnOrder = newColumn.map(column => column._id)
         newBoard.columns = newColumn
 
         setBoard(newBoard)
         setColumns(newColumn)
+        if (
+            JSON.stringify(newBoard.columnOrder) !==
+            JSON.stringify(board.columnOrder)
+        ) {
+            //Call api update columnOrder in board details
+            updateBoard(newBoard._id, newBoard).catch(() => {
+                setBoard(board)
+                setColumns(columns)
+            })
+        }
     }
 
     const onCardDrop = (columnId, dropResult) => {
@@ -59,7 +75,7 @@ function BoardContent() {
             dropResult.removedIndex !== null ||
             dropResult.addedIndex !== null
         ) {
-            let newColumn = [...columns]
+            let newColumn = cloneDeep(columns)
 
             let currentColumn = newColumn.find(c => c._id === columnId)
             currentColumn.cards = applyDrag(currentColumn.cards, dropResult)
@@ -69,6 +85,34 @@ function BoardContent() {
             )
 
             setColumns(newColumn)
+            if (
+                dropResult.removedIndex !== null &&
+                dropResult.addedIndex !== null
+            ) {
+                /**
+                 * Action : move card inside its column
+                 * 1 - Call api update cardOrder in current column
+                 */
+                updateCoulumn(currentColumn._id, currentColumn).catch(() =>
+                    setColumns(columns)
+                )
+            } else {
+                /**
+                 * Action: Move card between two column
+                 * 1 - Call api update cardOrder in current column
+                 * 2 - Call api update columnId in current card
+                 */
+
+                if (dropResult.addedIndex !== null) {
+                    let currentCard = dropResult.payload
+                    currentCard.columnId = currentColumn._id
+
+                    updateCoulumn(currentColumn._id, currentColumn).catch(() =>
+                        setColumns(columns)
+                    )
+                    updateCard(currentCard._id, currentCard)
+                }
+            }
         }
     }
 
