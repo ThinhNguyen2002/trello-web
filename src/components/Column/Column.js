@@ -77,7 +77,7 @@ function Column(props) {
         setNewCardContent(e.target.value)
     }
     const handleAddNewCard = () => {
-        if (!newCardContent) {
+        if (!newCardContent || newCardContent.length < 3 ) {
             newCardAreaRef.current.focus()
             return
         }
